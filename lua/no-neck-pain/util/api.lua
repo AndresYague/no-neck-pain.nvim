@@ -117,7 +117,14 @@ function api.debounce(context, callback, timeout)
         debouncer.executing = true
         vim.schedule(function()
             log.debug(context, ">> debouncer triggered")
-            callback(context)
+            local success, message = pcall(callback, context)
+            if not success then
+                if message:match("treesitter") ~= nil then
+                    vim.notify("Ignoring treesitter parser error")
+                else
+                    error(message)
+                end
+            end
             debouncer.executing = false
 
             -- no other timer waiting
